@@ -40,5 +40,42 @@ namespace OA.Web.Controllers
 
             return View(model);
         }
+
+        [HttpGet]
+        public ActionResult AddUser()
+        {
+            var model = new UserViewModel();
+            return PartialView("_AddUser", model);
+        }
+
+        [HttpPost]
+        public ActionResult AddUser(UserViewModel model)
+        {
+            User userEntity = new User
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password,
+                AddedDate = DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow,
+                IpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString(),
+                UserProfile = new UserProfile
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Address = model.Address,
+                    AddedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow,
+                    IpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString()
+                }
+            };
+
+            userService.InsertUser(userEntity);
+            if(userEntity.Id > 0)
+            {
+                return RedirectToAction("index");
+            }
+            return View(model);
+        }
     }
 }
