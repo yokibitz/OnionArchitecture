@@ -20,7 +20,7 @@ namespace OA.Web.Controllers
             this.userService = userService;
             this.userProfileService = userProfileService;
         }
-        
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -71,6 +71,44 @@ namespace OA.Web.Controllers
             };
 
             userService.InsertUser(userEntity);
+            if (userEntity.Id > 0)
+            {
+                return RedirectToAction("index");
+            }
+            return View(model);
+        }
+
+        [HttpGet]
+        public ActionResult EditUser(int? id)
+        {
+            UserViewModel model = new UserViewModel();
+            if (id.HasValue && id.Value != 0)
+            {
+                User userEntity = userService.GetUser(id.Value);
+                UserProfile userProfileEntity = userProfileService.GetUserProfile(id.Value);
+                model.FirstName = userProfileEntity.FirstName;
+                model.LastName = userProfileEntity.LastName;
+                model.Address = userProfileEntity.Address;
+                model.Email = userEntity.Email;
+            }
+            return PartialView("_EditUser", model);
+        }
+
+        [HttpPost]
+        public ActionResult EditUser(UserViewModel model)
+        {
+            User userEntity = userService.GetUser(model.Id);
+            userEntity.Email = model.Email;
+            userEntity.ModifiedDate = DateTime.UtcNow;
+            userEntity.IpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            UserProfile userProfileEntity = userProfileService.GetUserProfile(model.Id);
+            userProfileEntity.FirstName = model.FirstName;
+            userProfileEntity.LastName = model.LastName;
+            userProfileEntity.Address = model.Address;
+            userProfileEntity.ModifiedDate = DateTime.UtcNow;
+            userProfileEntity.IpAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            userEntity.UserProfile = userProfileEntity;
+            userService.UpdateUser(userEntity);
             if(userEntity.Id > 0)
             {
                 return RedirectToAction("index");
