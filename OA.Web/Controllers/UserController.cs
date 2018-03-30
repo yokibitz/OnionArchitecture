@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using OA.Data;
 using OA.Service;
 using OA.Web.Models;
@@ -114,6 +115,21 @@ namespace OA.Web.Controllers
                 return RedirectToAction("index");
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public PartialViewResult DeleteUser(int id)
+        {
+            UserProfile userProfile = userProfileService.GetUserProfile(id);
+            string name = $"{userProfile.FirstName} {userProfile.LastName}";
+            return PartialView("_DeleteUser", name);
+        }
+
+        [HttpPost]
+        public ActionResult DeleteUser(long id, IFormCollection form)
+        {
+            userService.DeleteUser(id);
+            return RedirectToAction("Index");
         }
     }
 }
